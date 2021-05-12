@@ -3,7 +3,7 @@
 import face_recognition
 from PIL import Image, ImageDraw
 
-face_image_path = 'data/without_mask/127.jpg'
+face_image_path = 'data/without_mask/104.jpg'
 mask_image_path = 'data/mask.png'
 
 face_image_np = face_recognition.load_image_file(face_image_path)
@@ -13,41 +13,26 @@ face_landmarks = face_recognition.face_landmarks(face_image_np, face_locations)
 face_landmark_image = Image.fromarray(face_image_np)
 draw = ImageDraw.Draw(face_landmark_image)
 
-maxX = 0
-maxY = 0
-minX = 10000
-minY = 10000
-
 for face_landmark in face_landmarks:
    for feature_name, points in face_landmark.items():
        print(feature_name,points)
-       if feature_name == "chin":
-           for x, y in points:
-               if minX > x:
-                   minX = x
-               if minY > y:
-                   minY = y
-               if maxX < x:
-                   maxX = x
-               if maxY < y:
-                   maxY = y
 
-print(maxX,minX,maxY,minY)
+# x값
+maskLeft = face_landmarks[0]['chin'][0][0]
+maskRight = face_landmarks[0]['chin'][16][0]
+mask_xsize = abs(maskRight-maskLeft)
 
-for face_location in face_locations:
-    top = face_location[0]
-    right = face_location[1]
-    bottom = face_location[2]
-    left = face_location[3]
-    draw.rectangle(((left, top), (right, bottom)), outline=(255, 255, 0), width=4)
+# y값
+maskUp = face_landmarks[0]['nose_bridge'][0][1]
+maskDown = face_landmarks[0]['chin'][8][1]
+mask_ysize = abs(maskUp-maskDown)
+
+mask_image = Image.open(mask_image_path)
+
+mask_image = mask_image.resize((mask_xsize, mask_ysize))
+face_landmark_image.paste(mask_image, (maskLeft,maskUp), mask_image)
 
 mask_image_np = Image.fromarray(face_image_np)
 draw = ImageDraw.Draw(mask_image_np)
-
-mask_image = Image.open(mask_image_path)
-mask_image = mask_image.resize((int(maxX)-int(minX),int(maxY)-int(minY)))
-
-face_landmark_image.paste(mask_image,(int(minX), int(minY)),mask_image)
-
 
 face_landmark_image.show()
