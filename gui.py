@@ -9,6 +9,7 @@ import data
 import main
 
 
+# 데이터 로드 작업(없다면 제작)
 class LoadDataWorker(QThread):
     finished = pyqtSignal()
 
@@ -20,6 +21,7 @@ class LoadDataWorker(QThread):
         self.finished.emit()
 
 
+# 비디오 로드 작업
 class LoadVideoWorker(QThread):
     finished = pyqtSignal()
 
@@ -30,7 +32,7 @@ class LoadVideoWorker(QThread):
         main.video_processing(self.video_path, True)
         self.finished.emit()
 
-
+# 메인 구성
 class FaceMaskDetector(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -89,15 +91,18 @@ class FaceMaskDetector(QMainWindow):
 
         self.show()
 
+    # 데이터 로드
     def load_data(self):
         self.load_data_button.setEnabled(False)
         self.load_data_button.setText('데이터 로드 중')
         self.load_data_worker.start()
 
+    # 데이터 로드 종료
     def load_data_finished(self):
         self.load_data_button.setText('데이터 로드 완료')
         self.load_video_button.setEnabled(True)
 
+    # 비디오 로드
     def load_video(self):
         video_path, _ = QFileDialog.getOpenFileName(self, '', ".", "Video Files (*.mp4 *.flv *.ts *.mts *.avi *.wmv)")
         if video_path != '':
@@ -106,17 +111,20 @@ class FaceMaskDetector(QMainWindow):
         self.load_video_button.setText('영상 처리 중')
         self.load_video_worker.start()
 
+    # 비디오 로드 종료 후 플레이 버튼 활성화
     def load_video_finished(self):
         self.load_video_button.setText('영상 처리 완료')
         self.media_player.setMedia(QMediaContent(QUrl.fromLocalFile(QFileInfo('outputs/output.wmv').absoluteFilePath())))
         self.play_button.setEnabled(True)
 
+    # 비디오 재생
     def play_video(self):
         if self.media_player.state() == QMediaPlayer.PlayingState:
             self.media_player.pause()
         else:
             self.media_player.play()
 
+    # 비디오 실행 구간 변경
     def media_state_changed(self, state):
         if self.media_player.state() == QMediaPlayer.PlayingState:
             self.play_button.setIcon(
