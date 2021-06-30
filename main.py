@@ -26,6 +26,7 @@ def video_processing(video_path, background):
     colors = [(0, 255, 0), (0, 0, 255)]
     labels = ['with_mask', 'without_mask']
 
+    # 1 프레임마다 반복
     while cap.isOpened():
         ret, image = cap.read()
         if not ret:
@@ -39,17 +40,19 @@ def video_processing(video_path, background):
 
         result_image = image.copy()
 
+        # 예상에 대해 적합도를 측정
         for i in range(face_locations.shape[2]):
             confidence = face_locations[0, 0, i, 2]
             if confidence < 0.5:
                 continue
 
+            # 얼굴의 위치값을 받아옴
             left = int(face_locations[0, 0, i, 3] * width)
             top = int(face_locations[0, 0, i, 4] * height)
             right = int(face_locations[0, 0, i, 5] * width)
             bottom = int(face_locations[0, 0, i, 6] * height)
 
-            face_image = image[top:bottom, left:right]
+            face_image = image[top:bottom, left:right]                                                             
             face_image = cv2.resize(face_image, dsize=(224, 224))
             face_image = cv2.cvtColor(face_image, cv2.COLOR_BGR2RGB)
 
@@ -85,10 +88,11 @@ def video_processing(video_path, background):
         else:
             out.write(result_image)
 
-        # (10/400): 11%
+        # (10/400): 11%, 영상 데이터 변환
         print('(' + str(now_frame) + '/' + str(frame_count) + '): ' + str(now_frame * 100 // frame_count) + '%')
         now_frame += 1
 
+        # OPENCV 출력
         if not background:
             cv2.imshow('result', result_image)
             if cv2.waitKey(1) == ord('q'):
